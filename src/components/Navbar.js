@@ -31,7 +31,7 @@ function Navbar() {
         <div className="flex items-center gap-3 group cursor-pointer">
 
           <img
-            src="/logo.png"
+            src="/logo.png" alt="logo"
             className="w-12 h-12 sm:w-14 sm:h-14 object-contain 
             transition-transform duration-300 group-hover:scale-110"
           />

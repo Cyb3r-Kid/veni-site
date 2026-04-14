@@ -28,7 +28,7 @@ function Home() {
       setIndex((prev) => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(t);
-  }, []);
+  }, [slides.length]);
 
   // ✅ SMOOTH CURSOR (IMPROVED)
   useEffect(() => {
@@ -69,7 +69,7 @@ function Home() {
       <section className="relative h-screen overflow-hidden">
 
         <img
-          src={slides[index].image}
+          src={slides[index].image} alt="c1"
           className="absolute w-full h-full object-cover scale-105 transition-all duration-1000"
         />
 
@@ -110,7 +110,7 @@ function Home() {
           {slides.map((item, i) => (
             <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-3 transition-all duration-500">
 
-              <img src={item.image} className="h-56 md:h-64 w-full object-cover hover:scale-110 transition duration-700" />
+              <img src={item.image} alt="f1" className="h-56 md:h-64 w-full object-cover hover:scale-110 transition duration-700" />
 
               <div className="p-5 md:p-6">
                 <h3 className="text-lg md:text-xl font-semibold text-emerald-700">{item.title}</h3>
@@ -265,22 +265,22 @@ function Home() {
 
       <div className="flex gap-4 text-2xl">
 
-        <a href="#"
+        <a href="/"
           className="hover:scale-125 transition duration-300 hover:text-pink-500">
           📸
         </a>
 
-        <a href="#"
+        <a href="/"
           className="hover:scale-125 transition duration-300 hover:text-green-500">
           📱
         </a>
 
-        <a href="#"
+        <a href="/"
           className="hover:scale-125 transition duration-300 hover:text-blue-500">
           💬
         </a>
 
-        <a href="#"
+        <a href="/"
           className="hover:scale-125 transition duration-300 hover:text-emerald-600">
           🌐
         </a>
