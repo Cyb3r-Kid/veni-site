@@ -137,4 +137,6 @@ function Navbar() {
   );
 }
 
+console.log("changed bro");
+
 export default Navbar;
