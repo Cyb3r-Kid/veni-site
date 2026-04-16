@@ -52,7 +52,7 @@ function Home() {
   return (
     <div className="text-gray-800 bg-[#f8faf9] overflow-x-hidden">
 
-      <Navbar />
+      <Navbar type="home"/>
 
       {/* ================= CURSOR (BETTER GLOW) ================= */}
       <div
