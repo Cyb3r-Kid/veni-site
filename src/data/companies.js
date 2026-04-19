@@ -1,26 +1,20 @@
+import { getStaticImage } from "./imageRegistry";
+
 export const companies = [
   {
     id: "infra-projects",
-    name: "Veni Infra Projects Private Limited",
-    type: "Construction",
-    description: "High-quality infrastructure and civil engineering projects",
+    image: getStaticImage("construction", "companyCard"),
   },
   {
-    id: "in-project",
-    name: "Veni In Project",
-    type: "Construction",
-    description: "Specialized construction and project development works",
+    id: "trading",
+    image: getStaticImage("trading", "companyCard"),
   },
   {
-    id: "investment-planner",
-    name: "Veni Investment Planner",
-    type: "Finance",
-    description: "Life insurance, health insurance and financial planning",
+    id: "investment",
+    image: getStaticImage("investment", "companyCard"),
   },
   {
-    id: "physio-life",
-    name: "Veni Physio Life",
-    type: "Healthcare",
-    description: "Physiotherapy and rehabilitation services",
+    id: "physio",
+    image: getStaticImage("physio", "companyCard"),
   },
 ];

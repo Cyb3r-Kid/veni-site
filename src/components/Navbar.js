@@ -1,132 +1,270 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import { scrollToSectionId } from "../utils/scrollToSection";
+import { useAuth } from "../context/AuthContext";
+import { logoutUser } from "../services/authService";
+import { useToast } from "./ToastProvider";
+
+const NAV_LINKS = {
+  home: [
+    { id: "home" },
+    { id: "daily-quote" },
+    { id: "companies" },
+    { id: "about" },
+    { id: "why" },
+    { id: "contact" },
+  ],
+  infra: [
+    { id: "home" },
+    { id: "about" },
+    { id: "services" },
+    { id: "certifications" },
+    { id: "projects" },
+    { id: "why" },
+    { id: "contact" },
+  ],
+  trading: [
+    { id: "about" },
+    { id: "products" },
+    { id: "transport" },
+    { id: "equipment" },
+    { id: "why" },
+    { id: "contact" },
+  ],
+  physio: [
+    { id: "about" },
+    { id: "treatments" },
+    { id: "exercises" },
+    { id: "why" },
+    { id: "contact" },
+  ],
+  investment: [
+    { id: "about" },
+    { id: "services" },
+    { id: "benefits" },
+    { id: "why" },
+    { id: "contact" },
+  ],
+};
 
 function Navbar({ type = "home" }) {
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const { isAdmin } = useAuth();
+  const { pushToast } = useToast();
   const [open, setOpen] = useState(false);
+  const [activeId, setActiveId] = useState("");
+
+  const links = useMemo(() => NAV_LINKS[type] || NAV_LINKS.home, [type]);
 
   const scrollToSection = (id) => {
-    setOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    const performScroll = () => {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          scrollToSectionId(id);
+        });
+      });
+    };
+
+    if (open) {
+      setOpen(false);
+      performScroll();
+      return;
+    }
+
+    scrollToSectionId(id);
   };
 
-  // 🔥 DYNAMIC LINKS BASED ON PAGE
-  const navLinks = {
-    home: [
-      { name: "Companies", id: "companies" },
-      { name: "About", id: "about" },
-      { name: "Contact", id: "contact" }
-    ],
-    infra: [
-      { name: "Home", id: "home" },
-      { name: "About", id: "about" },
-      { name: "Services", id: "services" },
-      { name: "Projects", id: "projects" },
-      { name: "Why Us", id: "why" },
-      { name: "Contact", id: "contact" }
-    ],
-    trading: [
-      { name: "Products", id: "products" },
-      { name: "Equipment", id: "equipment" },
-      { name: "Contact", id: "contact" }
-    ]
+  useEffect(() => {
+    const observers = [];
+
+    links.forEach((link) => {
+      const el = document.getElementById(link.id);
+      if (!el) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) setActiveId(link.id);
+          });
+        },
+        { rootMargin: "-35% 0px -55% 0px", threshold: 0.05 }
+      );
+
+      observer.observe(el);
+      observers.push(observer);
+    });
+
+    return () => observers.forEach((observer) => observer.disconnect());
+  }, [links]);
+
+  const linkLabel = (id) => {
+    if (id === "daily-quote") return "Daily Quote";
+    return t(`nav.${type}.${id}`);
   };
 
-  const links = navLinks[type] || navLinks.home;
+  const handleAuthClick = async () => {
+    if (isAdmin) {
+      try {
+        await logoutUser();
+        pushToast({ title: "Logged out successfully." });
+        navigate("/", { replace: true });
+      } catch (error) {
+        pushToast({ title: error.message || "Unable to log out.", tone: "error" });
+      }
+      return;
+    }
+
+    navigate("/login");
+  };
 
   return (
-    <header
-      className="fixed top-0 left-0 w-full z-[999] 
-      bg-white/70 backdrop-blur-2xl 
-      border-b border-emerald-200 
-      shadow-md
-
-      after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px]
-      after:bg-gradient-to-r after:from-transparent after:via-emerald-400/60 after:to-transparent
-
-      before:absolute before:bottom-0 before:left-0 before:w-full before:h-[8px]
-      before:bg-emerald-400/10 before:blur-xl before:opacity-70
-      "
+    <motion.header
+      initial={{ y: -24, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="fixed left-0 top-0 z-[999] w-full border-b border-emerald-100 bg-white/90 shadow-sm backdrop-blur-xl"
     >
-
-      <div className="flex items-center justify-between h-18 px-4 sm:px-10">
-
-        {/* LOGO */}
-        <div className="flex items-center gap-3 group cursor-pointer">
+      <div className="flex h-16 items-center justify-between gap-2 px-4 sm:px-6 lg:px-10">
+        <Link to="/" className="group flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
           <img
             src="/logo.png"
-            alt="logo"
-            className="w-12 h-12 sm:w-14 sm:h-14 object-contain 
-            transition-transform duration-300 group-hover:scale-110"
+            alt={t("navbar.brand")}
+            className="h-9 w-9 object-contain transition-transform duration-300 group-hover:scale-110 sm:h-11 sm:w-11"
           />
-
-          <span className="text-emerald-700 font-bold text-xl sm:text-2xl tracking-wide 
-            transition duration-300 group-hover:text-emerald-600">
-            VIP Groups
+          <span className="truncate text-base font-bold tracking-wide text-emerald-700 transition duration-300 group-hover:text-emerald-600 sm:text-xl">
+            {t("navbar.brand")}
           </span>
+        </Link>
+
+        <div className="hidden items-center gap-4 md:flex lg:gap-6">
+          <nav className="flex items-center gap-4 text-sm font-medium lg:gap-6">
+            {links.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => scrollToSection(item.id)}
+                className={`rounded-full px-3 py-2 transition-all duration-200 ${
+                  activeId === item.id
+                    ? "bg-emerald-50 text-emerald-700 shadow-sm"
+                    : "text-gray-600 hover:bg-emerald-50 hover:text-emerald-600"
+                }`}
+              >
+                {linkLabel(item.id)}
+              </button>
+            ))}
+          </nav>
+
+          <div
+            className="flex items-center gap-0.5 rounded-lg border border-emerald-200 bg-emerald-50/80 p-0.5 text-xs font-semibold"
+            role="group"
+            aria-label="Language"
+          >
+            <button
+              type="button"
+              onClick={() => i18n.changeLanguage("en")}
+              className={`rounded-md px-2 py-1 transition ${
+                i18n.language?.startsWith("en")
+                  ? "bg-emerald-600 text-white shadow-md"
+                  : "text-emerald-700 hover:bg-white/60"
+              }`}
+            >
+              {t("navbar.lang_en")}
+            </button>
+            <button
+              type="button"
+              onClick={() => i18n.changeLanguage("ta")}
+              className={`rounded-md px-2 py-1 transition ${
+                i18n.language?.startsWith("ta")
+                  ? "bg-emerald-600 text-white shadow-md"
+                  : "text-emerald-700 hover:bg-white/60"
+              }`}
+            >
+              {t("navbar.lang_ta")}
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => scrollToSection("contact")}
+            className="whitespace-nowrap rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition-all duration-300 hover:scale-105 hover:bg-emerald-600"
+          >
+            {t("navbar.enquiry")}
+          </button>
+          <button
+            type="button"
+            onClick={handleAuthClick}
+            className="whitespace-nowrap rounded-lg border border-emerald-200 px-4 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
+          >
+            {isAdmin ? "Logout" : "Login"}
+          </button>
         </div>
 
-        {/* DESKTOP MENU */}
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-
-          {/* 🔥 DYNAMIC LINKS */}
-          {links.map((item, i) => (
+        <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-0.5 rounded-lg border border-emerald-200 bg-emerald-50/80 p-0.5 text-[10px] font-semibold">
             <button
-              key={i}
-              onClick={() => scrollToSection(item.id)}
-              className="relative hover:text-emerald-600 transition 
-              after:block after:h-[2px] after:w-0 after:bg-emerald-500 
-              after:transition-all after:duration-300 hover:after:w-full"
+              type="button"
+              onClick={() => i18n.changeLanguage("en")}
+              className={`rounded px-1.5 py-0.5 ${
+                i18n.language?.startsWith("en") ? "bg-emerald-600 text-white shadow-md" : "text-emerald-700"
+              }`}
             >
-              {item.name}
+              {t("navbar.lang_en")}
             </button>
-          ))}
-
-          {/* ENQUIRY BUTTON */}
+            <button
+              type="button"
+              onClick={() => i18n.changeLanguage("ta")}
+              className={`rounded px-1.5 py-0.5 ${
+                i18n.language?.startsWith("ta") ? "bg-emerald-600 text-white shadow-md" : "text-emerald-700"
+              }`}
+            >
+              {t("navbar.lang_ta")}
+            </button>
+          </div>
           <button
-            onClick={() => scrollToSection("contact")}
-            className="ml-4 bg-emerald-500 hover:bg-emerald-600 
-            text-white px-5 py-2 rounded-xl shadow-md 
-            hover:shadow-lg hover:scale-105 transition-all duration-300"
+            type="button"
+            onClick={() => setOpen((current) => !current)}
+            className="shrink-0 text-2xl text-emerald-700 transition hover:scale-110"
+            aria-label="Menu"
           >
-            Enquiry
+            {open ? "\u2715" : "\u2630"}
           </button>
-
-        </nav>
-
-        {/* MOBILE MENU BUTTON */}
-        <button
-          onClick={() => setOpen(!open)}
-          className="md:hidden text-2xl text-emerald-700 hover:scale-110 transition"
-        >
-          ☰
-        </button>
+        </div>
       </div>
 
-      {/* MOBILE MENU */}
-      {open && (
-        <div className="md:hidden bg-white border-t border-emerald-100 px-4 py-4 flex flex-col gap-4 text-sm shadow-lg">
-
-          {links.map((item, i) => (
+      {open ? (
+        <div className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto border-t border-emerald-100 bg-white px-4 py-4 text-sm shadow-md md:hidden">
+          {links.map((item) => (
             <button
-              key={i}
+              key={item.id}
+              type="button"
               onClick={() => scrollToSection(item.id)}
-              className="hover:text-emerald-600 transition"
+              className={`rounded-lg px-2 py-1 text-left transition-colors duration-200 ${
+                activeId === item.id ? "bg-emerald-50 font-semibold text-emerald-700" : "text-gray-600 hover:text-emerald-600"
+              }`}
             >
-              {item.name}
+              {linkLabel(item.id)}
             </button>
           ))}
-
           <button
+            type="button"
             onClick={() => scrollToSection("contact")}
-            className="bg-emerald-500 text-white py-2 rounded-lg 
-            hover:bg-emerald-600 transition shadow-md"
+            className="mt-1 rounded-lg bg-emerald-500 py-2 text-sm text-white transition hover:bg-emerald-600"
           >
-            Enquiry
+            {t("navbar.enquiry")}
           </button>
-
+          <button
+            type="button"
+            onClick={handleAuthClick}
+            className="rounded-lg border border-emerald-200 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
+          >
+            {isAdmin ? "Logout" : "Login"}
+          </button>
         </div>
-      )}
-
-    </header>
+      ) : null}
+    </motion.header>
   );
 }
 

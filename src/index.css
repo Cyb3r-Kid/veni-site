@@ -2,18 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* =========================
-   GLOBAL FONT
-========================= */
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   margin: 0;
   padding: 0;
+  background: #f8fafc;
+  color: #1f2937;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
-/* =========================
-   FADE UP ANIMATION
-========================= */
+html.lang-ta body {
+  font-family: "Noto Sans Tamil", "Inter", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 @keyframes fadeUp {
   from {
     opacity: 0;
@@ -29,9 +37,6 @@ body {
   animation: fadeUp 0.7s ease-out both;
 }
 
-/* =========================
-   FADE IN ANIMATION
-========================= */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -47,9 +52,6 @@ body {
   animation: fadeIn 0.8s ease-out both;
 }
 
-/* =========================
-   NAVBAR DROP ANIMATION
-========================= */
 @keyframes navDrop {
   from {
     transform: translateY(-20px);
@@ -65,9 +67,6 @@ body {
   animation: navDrop 0.6s ease-out both;
 }
 
-/* =========================
-   LOGO GLOW ANIMATION
-========================= */
 @keyframes softGlow {
   0% {
     transform: scale(1);
@@ -89,27 +88,30 @@ body {
 
 html {
   scroll-behavior: smooth;
+  --navbar-scroll-offset: 80px;
+}
+
+section[id] {
+  scroll-margin-top: var(--navbar-scroll-offset);
+}
+
+.scroll-mt-24 {
+  scroll-margin-top: var(--navbar-scroll-offset);
 }
 
 .perspective {
   perspective: 1000px;
 }
 
-@keyframes fadeUp {
+@keyframes i18nContentFade {
   from {
-    opacity: 0;
-    transform: translateY(20px);
+    opacity: 0.88;
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
-.animate-fadeUp {
-  animation: fadeUp 0.8s ease forwards;
-}
-
-html {
-  scroll-behavior: smooth;
+body.i18n-content-fade #root {
+  animation: i18nContentFade 0.35s ease-out;
 }
